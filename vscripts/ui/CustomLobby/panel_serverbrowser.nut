@@ -9,9 +9,13 @@ global function RegisterServerBrowserButtonPressedCallbacks
 global function UnRegisterServerBrowserButtonPressedCallbacks
 global function ServerBrowser_UpdateFilterLists
 
+global function MS_GetPlayerCount
+global function MS_GetServerCount
+global function Servers_GetActivePlaylists
+global function Servers_GetCurrentServerListing
+
 //Used for max items for page
 //Changing this requires a bit of work to get more to show correctly
-//So keep at 19
 const SB_MAX_SERVER_PER_PAGE = 15
 
 // Stores mouse delta used for scroll bar
@@ -38,7 +42,7 @@ struct SelectedServerInfo
 }
 
 //Struct for server listing
-struct ServerListing
+global struct ServerListing
 {
 	int	svServerID
 	string svServerName
@@ -72,6 +76,8 @@ struct
 	array<ServerListing> m_vServerList
 	array<ServerListing> m_vFilteredServerList
 } file
+
+global array<ServerListing> global_m_vServerList
 
 void function InitR5RConnectingPanel( var panel )
 {
@@ -161,7 +167,6 @@ void function ServerBrowser_ServerBtnClicked(var button)
 {
 	//Get the button id and add it to the scroll offset to get the correct server id
 	int id = Hud_GetScriptID( button ).tointeger() + m_vScroll.Offset
-
 	ServerBrowser_SelectServer(file.m_vFilteredServerList[id].svServerID)
 }
 
@@ -169,9 +174,7 @@ void function ServerBrowser_ServerBtnDoubleClicked(var button)
 {
 	//Get the button id and add it to the scroll offset to get the correct server id
 	int id = Hud_GetScriptID( button ).tointeger() + m_vScroll.Offset
-
 	ServerBrowser_SelectServer(file.m_vFilteredServerList[id].svServerID)
-
 	thread ServerBrowser_StartConnection(id)
 }
 
@@ -189,7 +192,7 @@ void function ServerBrowser_StartConnection(int id)
 	wait 2
 
 	Hud_SetVisible(Hud_GetChild( file.menu, "R5RConnectingPanel"), false)
-	SetEncKeyAndConnect(id)
+	ConnectToListedServer(id)
 }
 
 void function ServerBrowser_UpdateSelectedServerUI()
@@ -216,24 +219,6 @@ void function ServerBrowser_UpdateServerPlayerCount()
 {
 	Hud_SetText( Hud_GetChild( file.panel, "PlayersCount"), "Players: " + file.m_vAllPlayers)
 	Hud_SetText( Hud_GetChild( file.panel, "ServersCount"), "Servers: " + file.m_vAllServers)
-}
-
-array<string> function GetVisiblePlaylists()
-{
-	array<string> m_vPlaylists
-
-	//Setup available playlists array
-	foreach( string playlist in GetAvailablePlaylists())
-	{
-		//Check playlist visibility
-		if(!GetPlaylistVarBool( playlist, "visible", false ))
-			continue
-
-		//Add playlist to the array
-		m_vPlaylists.append(playlist)
-	}
-
-	return m_vPlaylists
 }
 
 void function OnBtnFiltersClear()
@@ -577,4 +562,67 @@ void function SliderBarUpdate()
 
 	m_vScroll.Offset = -int( ( ( newPos - minYPos ) / useableSpace ) * ( file.m_vFilteredServerList.len() - SB_MAX_SERVER_PER_PAGE ) )
 	UpdateShownPage()
+}
+
+int function MS_GetPlayerCount()
+{
+	if(file.m_vServerList.len() == 0)
+		ServerBrowser_RefreshServerListing()
+
+	int count = 0
+	for (int i=0, j=GetServerCount(); i < j; i++) {
+		count += GetServerCurrentPlayers(i)
+	}
+
+	return count
+}
+
+int function MS_GetServerCount()
+{
+	if(file.m_vServerList.len() == 0)
+		ServerBrowser_RefreshServerListing()
+
+	return file.m_vServerList.len()
+}
+
+array<string> function Servers_GetActivePlaylists()
+{
+	if(file.m_vServerList.len() == 0)
+		ServerBrowser_RefreshServerListing()
+
+	array<string> playlists
+
+	for (int i=0, j=GetServerCount(); i < j; i++) {
+		string playlist = GetServerPlaylist(i)
+		if (!playlists.contains(playlist))
+			playlists.append(playlist)
+	}
+
+	return playlists
+}
+
+void function Servers_GetCurrentServerListing()
+{
+	if(file.m_vServerList.len() == 0)
+		ServerBrowser_RefreshServerListing()
+
+	global_m_vServerList = file.m_vServerList
+}
+
+array<string> function GetVisiblePlaylists()
+{
+	array<string> m_vPlaylists
+
+	//Setup available playlists array
+	foreach( string playlist in GetAvailablePlaylists())
+	{
+		//Check playlist visibility
+		if(!GetPlaylistVarBool( playlist, "visible", false ))
+			continue
+
+		//Add playlist to the array
+		m_vPlaylists.append(playlist)
+	}
+
+	return m_vPlaylists
 }

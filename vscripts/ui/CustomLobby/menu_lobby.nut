@@ -3,13 +3,14 @@ global function GetUIPlaylistName
 global function GetUIMapName
 global function GetUIMapAsset
 global function GetUIVisibilityName
-global function InPlayersLobby
 
 struct
 {
 	var menu
 	array<var> buttons
 	array<var> panels
+
+	int currentpanel = 0
 
 	var HomePanel
 	var CreateServerPanel
@@ -81,8 +82,6 @@ void function InitR5RLobbyMenu( var newMenuArg )
 	AddMenuEventHandler( menu, eUIEvent.MENU_NAVIGATE_BACK, OnR5RLobby_Back )
 
 	//Button event handlers
-	Hud_AddEventHandler( Hud_GetChild(menu, "SettingsBtn"), UIE_CLICK, SettingsPressed )
-	Hud_AddEventHandler( Hud_GetChild(menu, "QuitBtn"), UIE_CLICK, QuitPressed )
 	array<var> buttons = GetElementsByClassname( file.menu, "TopButtons" )
 	foreach ( var elem in buttons ) {
 		Hud_AddEventHandler( elem, UIE_CLICK, OpenSelectedPanel )
@@ -90,53 +89,28 @@ void function InitR5RLobbyMenu( var newMenuArg )
 
 	//Setup panel array
 	file.panels.append(Hud_GetChild(menu, "R5RHomePanel"))
-	file.panels.append(Hud_GetChild(menu, "R5RPrivateMatchPanel"))
 	file.panels.append(Hud_GetChild(menu, "R5RServerBrowserPanel"))
+	file.panels.append(Hud_GetChild(menu, "ModsPanel"))
+	file.panels.append(null)
 
 	//Setup Button Vars
 	file.buttons.append(Hud_GetChild(menu, "HomeBtn"))
-	file.buttons.append(Hud_GetChild(menu, "CreateServerBtn"))
 	file.buttons.append(Hud_GetChild(menu, "ServerBrowserBtn"))
+	file.buttons.append(Hud_GetChild(menu, "ModsBtn"))
+	file.buttons.append(Hud_GetChild(menu, "SettingsBtn"))
+
+	ToolTips_AddMenu( menu )
 }
 
-void function OpenSelectedPanel(var button)
+void function OnR5RLobby_Open()
 {
-	//Get the script id, and show the panel acording to that id
-	int scriptid = Hud_GetScriptID( button ).tointeger()
-	ShowSelectedPanel( file.panels[scriptid], button )
-
-	switch(scriptid)
-	{
-		case 0:
-			UI_SetPresentationType( ePresentationType.PLAY )
-			CurrentPresentationType = ePresentationType.PLAY
-			break;
-		case 1:
-			PrivateMatchMenuOpened()
-			UI_SetPresentationType( ePresentationType.CHARACTER_SELECT )
-			CurrentPresentationType = ePresentationType.CHARACTER_SELECT
-			break;
-		case 2:
-			UI_SetPresentationType( ePresentationType.COLLECTION_EVENT )
-			CurrentPresentationType = ePresentationType.COLLECTION_EVENT
-			break;
-	}
-}
-
-void function SettingsPressed(var button)
-{
-	//Open Settings Menu
-	AdvanceMenu( GetMenu( "MiscMenu" ) )
-}
-
-void function QuitPressed(var button)
-{
-	//Open confirm exit diologe
-	OpenConfirmExitToDesktopDialog()
+	ToolTips_MenuOpened( file.menu )
+	RegisterServerBrowserButtonPressedCallbacks()
 }
 
 void function OnR5RLobby_Close()
 {
+	ToolTips_MenuClosed( file.menu )
 	UnRegisterServerBrowserButtonPressedCallbacks()
 }
 
@@ -152,14 +126,52 @@ void function OnR5RLobby_Show()
 
 	//Set back to default for next time
 	g_isAtMainMenu = false
-	server_host_name = ""
-
-	RunClientScript("UICallback_SetHostName", GetPlayerName() + "'s Lobby")
 }
 
-void function OnR5RLobby_Open()
+void function OnR5RLobby_Back()
 {
-	RegisterServerBrowserButtonPressedCallbacks()
+	if(file.currentpanel == 2) {
+		switch(g_modCameraPosition) {
+			case ModCameraPosition.BROWSE:
+				ChangeModsPanel(ModCameraMovement.BROWSE_TO_MAIN)
+				return;
+			case ModCameraPosition.INSTALLED:
+				ChangeModsPanel(ModCameraMovement.INSTALLED_TO_MAIN)
+				return;
+		}
+	}
+
+	AdvanceMenu( GetMenu( "SystemMenu" ) )
+}
+
+void function OpenSelectedPanel(var button)
+{
+	//Get the script id, and show the panel acording to that id
+	int scriptid = Hud_GetScriptID( button ).tointeger()
+	ShowSelectedPanel( file.panels[scriptid], button )
+
+	file.currentpanel = scriptid
+
+	switch(scriptid)
+	{
+		case 0:
+			Play_SetupUI()
+			UI_SetPresentationType( ePresentationType.PLAY )
+			CurrentPresentationType = ePresentationType.PLAY
+			break;
+		case 1:
+			UI_SetPresentationType( ePresentationType.COLLECTION_EVENT )
+			CurrentPresentationType = ePresentationType.COLLECTION_EVENT
+			break;
+		case 2:
+			Mods_SetupUI()
+			UI_SetPresentationType( ePresentationType.MODS )
+			CurrentPresentationType = ePresentationType.MODS
+			break;
+		case 3:
+			AdvanceMenu( GetMenu( "MiscMenu" ) )
+			break;
+	}
 }
 
 void function SetupLobby()
@@ -169,7 +181,7 @@ void function SetupLobby()
 	thread TryRunDialogFlowThread()
 
 	//Set Version
-	SetUIVersion()
+	Play_SetupUI()
 
 	//Set selected legend from playlist
 	ItemFlavor character = GetItemFlavorByHumanReadableRef( GetCurrentPlaylistVarString( "set_legend", "character_wraith" ) )
@@ -178,9 +190,13 @@ void function SetupLobby()
 
 void function ShowSelectedPanel(var panel, var button)
 {
+	if(panel == null)
+		return
+	
 	//Hide all panels
 	foreach ( p in file.panels ) {
-		Hud_SetVisible( p, false )
+		if(p != null)
+			Hud_SetVisible( p, false )
 	}
 
 	//Unselect all buttons
@@ -194,6 +210,12 @@ void function ShowSelectedPanel(var panel, var button)
 	//Show selected panel
 	Hud_SetVisible( panel, true )
 }
+
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// Extra Functions
+//
+////////////////////////////////////////////////////////////////////////////////////////
 
 string function GetUIPlaylistName(string playlist)
 {
@@ -225,32 +247,4 @@ asset function GetUIMapAsset(string map)
 		return MapAssets[map]
 
 	return $"rui/menu/maps/map_not_found"
-}
-
-void function OnR5RLobby_Back()
-{
-	if(PMMenusOpen.maps_open || PMMenusOpen.playlists_open || PMMenusOpen.vis_open || PMMenusOpen.name_open || PMMenusOpen.desc_open || PMMenusOpen.kick_open)
-    {
-		var pmpanel = GetPanel( "R5RPrivateMatchPanel" )
-        Hud_SetVisible( Hud_GetChild(pmpanel, "R5RMapPanel"), false )
-        Hud_SetVisible( Hud_GetChild(pmpanel, "R5RPlaylistPanel"), false )
-        Hud_SetVisible( Hud_GetChild(pmpanel, "R5RVisPanel"), false )
-        Hud_SetVisible( Hud_GetChild(file.menu, "R5RNamePanel"), false )
-        Hud_SetVisible( Hud_GetChild(file.menu, "R5RDescPanel"), false )
-        Hud_SetVisible( Hud_GetChild(file.menu, "R5RKickPanel"), false )
-
-        PMMenusOpen.maps_open = false
-        PMMenusOpen.playlists_open = false
-        PMMenusOpen.vis_open = false
-        PMMenusOpen.name_open = false
-        PMMenusOpen.desc_open = false
-        PMMenusOpen.kick_open = false
-    }
-}
-
-void function InPlayersLobby(bool show, string host)
-{
-	Hud_SetVisible( Hud_GetChild(GetPanel( "R5RHomePanel" ), "InPlayersLobby"), show )
-    Hud_SetVisible( Hud_GetChild(GetPanel( "R5RHomePanel" ), "InPlayersLobbyText"), show )
-	Hud_SetText( Hud_GetChild(GetPanel( "R5RHomePanel" ), "InPlayersLobbyText"), "You are in " + host + "'s lobby" )
 }

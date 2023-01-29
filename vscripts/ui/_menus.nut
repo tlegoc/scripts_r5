@@ -1521,22 +1521,18 @@ void function InitMenus()
 	AddMenu( "EliteIntroMenu", $"resource/ui/menus/elite_intro.menu", InitEliteIntroMenu )
 
 	//R5Reloaded UI
-	var r5rmainMenu = AddMenu( "R5RMainMenu", $"scripts/resource/ui/menus/R5R/main.res", InitR5RMainMenu, "#MAIN" )
+	var r5rmainMenu = AddMenu( "R5RMainMenu", $"scripts/resource/ui/menus/CustomLobby/main.res", InitR5RMainMenu, "#MAIN" )
 	AddPanel( r5rmainMenu, "R5RMainMenuPanel", InitR5RMainMenuPanel )
 
-	var r5rlobbymenu = AddMenu( "R5RLobbyMenu", $"scripts/resource/ui/menus/R5R/lobbymenu.res", InitR5RLobbyMenu )
+	var r5rlobbymenu = AddMenu( "R5RLobbyMenu", $"scripts/resource/ui/menus/CustomLobby/lobbymenu.res", InitR5RLobbyMenu )
 	AddPanel( r5rlobbymenu, "R5RHomePanel", InitR5RHomePanel )
 	AddPanel( r5rlobbymenu, "R5RServerBrowserPanel", InitR5RServerBrowserPanel )
-	AddPanel( r5rlobbymenu, "R5RNamePanel", InitR5RNamePanel )
-	AddPanel( r5rlobbymenu, "R5RDescPanel", InitR5RDescPanel )
-	AddPanel( r5rlobbymenu, "R5RKickPanel", InitR5RKickPanel )
-	AddPanel( r5rlobbymenu, "R5RStartingPanel", InitR5RStartingPanel )
+	AddPanel( r5rlobbymenu, "ModsPanel", InitModsPanel )
 	AddPanel( r5rlobbymenu, "R5RConnectingPanel", InitR5RConnectingPanel )
 
-	var privatematchmenu = AddPanel( r5rlobbymenu, "R5RPrivateMatchPanel", InitR5RPrivateMatchMenu )
-	AddPanel( privatematchmenu, "R5RPlaylistPanel", InitR5RPlaylistPanel )
-	AddPanel( privatematchmenu, "R5RMapPanel", InitR5RMapPanel )
-	AddPanel( privatematchmenu, "R5RVisPanel", InitR5RVisPanel )
+	AddMenu( "R5RNews", $"scripts/resource/ui/menus/CustomLobby/news.res", InitR5RNews )
+	AddMenu( "R5RGamemodeSelectV2Dialog", $"scripts/resource/ui/menus/CustomLobby/gamemode_select.res", InitR5RGamemodeSelectDialog )
+	AddMenu( "R5RCreateMatch", $"scripts/resource/ui/menus/CustomLobby/create_match.res", InitR5RCreateMatch )
 	////////
 
 	//CTF UI
@@ -1566,6 +1562,10 @@ void function InitMenus()
 	
 	//Custom KillReplayHud
 	var killreplayhud = AddMenu( "KillReplayHud", $"scripts/resource/ui/menus/KillReplay/replayhud.menu", InitKillReplayHud )
+	///////
+
+	//Custom Weapon Mods Menu
+	var weaponmodsmenu = AddMenu( "WeaponMods", $"scripts/resource/ui/menus/weaponmods.menu", InitWeaponModsMenu )
 	///////
 
 	var lobbyMenu = AddMenu( "LobbyMenu", $"resource/ui/menus/lobby.menu", InitLobbyMenu )

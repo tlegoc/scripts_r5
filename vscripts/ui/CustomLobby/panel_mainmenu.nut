@@ -13,16 +13,8 @@ void function InitR5RMainMenuPanel( var panel )
 	file.menu = GetParentMenu( file.panel )
 	file.launchButton = Hud_GetChild( panel, "LaunchButton" )
 
-	// mainmenu handler
 	AddPanelEventHandler( file.panel, eUIEvent.PANEL_SHOW, OnMainMenuPanel_Show )
-
-	// launchbutton handler
 	Hud_AddEventHandler( file.launchButton, UIE_CLICK, LaunchButton_OnActivate )
-}
-
-void function OnMainMenuPanel_Show( var panel )
-{
-	SetupRUI()
 }
 
 void function LaunchButton_OnActivate( var button )
@@ -30,7 +22,7 @@ void function LaunchButton_OnActivate( var button )
 	CreateServer("Lobby", "", "mp_lobby", "menufall", eServerVisibility.HIDDEN)
 }
 
-void function SetupRUI()
+void function OnMainMenuPanel_Show( var panel )
 {
 	var statusDetailsRui = Hud_GetRui( Hud_GetChild( file.panel, "StatusDetails" ) )
 	var statusRui = Hud_GetRui( Hud_GetChild( file.panel, "Status" ) )
