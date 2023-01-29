@@ -278,11 +278,9 @@ void function CodeCallback_MapSpawn() // original script entry point
 	PrecacheWeapon( $"mp_weapon_rspn101" )
 	PrecacheWeapon( $"mp_weapon_defender" )
 	PrecacheWeapon( $"mp_weapon_jump_pad" )
-	
+
 	PrecacheWeapon( $"mp_weapon_grenade_creeping_bombardment" )
 	PrecacheWeapon( $"mp_weapon_grenade_defensive_bombardment" )
-	
-	
 
 
 	//Ported weapons section
@@ -293,10 +291,10 @@ void function CodeCallback_MapSpawn() // original script entry point
 		//PrecacheWeapon( $"mp_weapon_softball" )
 		PrecacheWeapon( $"mp_weapon_sentinel" )
 		//PrecacheWeapon( $"mp_weapon_throwingknife" )
-		
+
 		PrecacheWeapon( $"melee_bolo_sword" )
 		PrecacheWeapon( $"mp_weapon_bolo_sword_primary" )
-		
+
 		//PrecacheWeapon( $"mp_weapon_melee_boxing_ring")
 		//PrecacheWeapon( $"melee_boxing_ring")
 	}

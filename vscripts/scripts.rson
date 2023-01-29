@@ -970,3 +970,25 @@ Scripts:
 	mp/_zipline_utility/sh_zipline_utility.gnut
     mp/_zipline_utility/sh_zipline_panel.gnut
 ]
+
+
+
+// Custom SND
+When: "SERVER || CLIENT"
+Scripts:
+[
+	gamemodes/custom_snd/sh_gamemode_custom_snd.nut
+	gamemodes/custom_snd/custom_snd_settings.nut
+]
+
+When: "SERVER"
+Scripts:
+[
+	gamemodes/custom_snd/_gamemode_custom_snd.nut
+]
+
+When: "CLIENT"
+Scripts:
+[
+	gamemodes/custom_snd/cl_gamemode_custom_snd.nut
+]
