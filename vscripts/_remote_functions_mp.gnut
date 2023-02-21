@@ -176,11 +176,11 @@ void function RemoteFunctions_Init_Begin()
 			Remote_RegisterClientFunction("ServerCallback_OpenFRChallengesHistory", "int", 0, 999999 )
 			Remote_RegisterUIFunction( "OpenFRChallengesMainMenu", "int", 0, 999999 )
 			Remote_RegisterUIFunction( "CloseFRChallengesMainMenu")
-			
+
 			Remote_RegisterClientFunction("ServerCallback_OpenFRChallengesSettings")
 			Remote_RegisterUIFunction( "OpenFRChallengesSettings" )
 			Remote_RegisterUIFunction( "CloseFRChallengesSettings" )
-		
+
 			Remote_RegisterUIFunction( "OpenFRChallengesSettingsWpnSelector" )
 			Remote_RegisterUIFunction( "CloseFRChallengesSettingsWpnSelector" )
 			Remote_RegisterClientFunction("ServerCallback_ToggleDotForHitscanWeapons", "bool")
@@ -193,13 +193,13 @@ void function RemoteFunctions_Init_Begin()
 			Remote_RegisterClientFunction("ServerCallback_LiveStatsUIDamageViaDummieDamaged", "int", 0, 999999)
 			Remote_RegisterClientFunction("ServerCallback_LiveStatsUIHeadshot", "int", 0, 999999)
 			Remote_RegisterClientFunction("ServerCallback_ResetLiveStatsUI")
-			Remote_RegisterClientFunction("ServerCallback_SetDefaultMenuSettings")			
+			Remote_RegisterClientFunction("ServerCallback_SetDefaultMenuSettings")
 			Remote_RegisterClientFunction("ServerCallback_SetLaserSightsOnSMGWeapon", "entity")
 			Remote_RegisterClientFunction("ServerCallback_StopLaserSightsOnSMGWeapon", "entity")
 			Remote_RegisterClientFunction("ServerCallback_CreateDistanceMarkerForGrenadesChallengeDummies", "entity", "entity")
 		case CUSTOM_TDM:
-		case MENUFALL:
 		case CUSTOM_SND:
+		case MENUFALL:
 		case SURVIVAL:
 			RegisterNetworkedVariable( "isPlayerShadowForm", SNDC_PLAYER_GLOBAL, SNVT_BOOL, false )
 			RegisterNetworkedVariable( "hasDeathFieldImmunity", SNDC_PLAYER_EXCLUSIVE, SNVT_BOOL, false )

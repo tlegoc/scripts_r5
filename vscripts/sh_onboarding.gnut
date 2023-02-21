@@ -167,7 +167,7 @@ void function Sequence_PickLoadout()
 			string skydiveMusicID = MusicPack_GetSkydiveMusic( musicPack )
 			StopMusicOnPlayer( player, skydiveMusicID )
 
-			if(GameRules_GetGameMode() != "custom_tdm"){CharacterSelect_TryAssignCharacterCandidatesToPlayer( player, [] ) }// No candidates to force it to pick a random legend.
+			if(GameRules_GetGameMode() != "custom_tdm"|| GameRules_GetGameMode() != "custom_snd"){CharacterSelect_TryAssignCharacterCandidatesToPlayer( player, [] ) }// No candidates to force it to pick a random legend.
 		}
 
 		thread Sequence_Prematch()
@@ -581,7 +581,7 @@ void function OnCharacterSkinChanged( EHI playerEHI, ItemFlavor flavor )
 void function UpdatePlayerCounts()
 {
 	string currGameMode = GameRules_GetGameMode()
-	if(currGameMode == "custom_tdm"){
+	if(currGameMode == "custom_tdm" || currGameMode == "custom_snd"){
 		array<entity> connectedPlayers = GetPlayerArray_ConnectedNotSpectatorTeam()
 		SetGlobalNetInt( "livingPlayerCount", GetPlayerArray().len() )
 		SetGlobalNetInt( "squadsRemainingCount", GetPlayerArray().len() )
