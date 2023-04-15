@@ -75,10 +75,17 @@ void function _CustomSND_Init() {
 }
 
 struct {
-    array<entity> bombs
+    array<entity> bombSites
     array<entity> attackersTeam
     array<entity> defusersTeam
     array<entity> spectators
+
+    entity currentBomb
+    bool isPlanted
+    bool isDefused
+
+    int attackersTeamScore
+    int defusersTeamScore
 
 	array<dropshipAnimData> dropshipAnimDataList
 } file
@@ -115,14 +122,11 @@ void function MakeTeams() {
         if (!IsValid(player) || i < 8)  {
             if (i % 2 == 0) {
                 file.attackersTeam.append(player)
-                SetTeam(player, TEAM_IMC)
             } else {
                 file.defusersTeam.append(player)
-                SetTeam(player, TEAM_MILITIA)
             }
         } else {
             file.spectators.append(player)
-            SetTeam(player, 3)
         }
 
         i++
@@ -134,12 +138,17 @@ void function GenerateMap() {
         if (IsValid(ent)) ent.Destroy()
     }
 
+    file.bombSites = []
+    file.currentBomb = null
+    file.isPlanted = false
+    file.isDefused = false
+
     propsToDelete.clear()
 
     SNDMap map = SND_maps[0]
 
-    file.bombs.append(CreateBombPlantSite(map.PlantSite1))
-    file.bombs.append(CreateBombPlantSite(map.PlantSite2))
+    file.bombSites.append(CreateBombPlantSite(map.PlantSite1))
+    file.bombSites.append(CreateBombPlantSite(map.PlantSite2))
 }
 
 void function PreRound() {
@@ -401,6 +410,7 @@ void function SND_SetRespawn(entity player) {
     DecideRespawnPlayer(player, true)
 
     ClearInvincible(player)
+	ResetPlayerInventory(player)
     DeployAndEnableWeapons(player)
     player.UnforceStand()
     DeployAndEnableWeapons(player)
@@ -408,7 +418,7 @@ void function SND_SetRespawn(entity player) {
 }
 
 bool function ClientCommand_SND_SetObserve(entity player, array<string> args) {
-    SetObserve(player, file.bombs[0])
+    SetObserve(player, file.bombSites[0])
     return true
 }
 
@@ -487,7 +497,7 @@ entity function CreateBomb(vector location) {
     //Usage
     bomb.SetUsable()
     //bomb.AllowMantle()
-    bomb.SetUsableValue(USABLE_BY_ALL | USABLE_CUSTOM_HINTS)
+    bomb.SetUsableValue(USABLE_BY_ENEMIES | USABLE_CUSTOM_HINTS)
     bomb.SetUsePrompts( "Defuse the bomb", "Defuse the bomb" )
     bomb.SetUsablePriority( USABLE_PRIORITY_HIGH )
 
@@ -524,6 +534,7 @@ void function SNDBombDefuse( entity bomb, entity playerUser, ExtendedUseSettings
 {
     SND_Print("Bomb defused")
 	bomb.Destroy()
+    file.isDefused = true
 }
 
 void function SNDBombStartUse( entity bomb, entity player, ExtendedUseSettings settings )
@@ -580,6 +591,7 @@ void function SNDPlantSitePlanted( entity ps, entity player, ExtendedUseSettings
 {
 	SND_Print("Bomb planted")
     CreateBomb(player.GetOrigin())
+    file.isPlanted = true
     ps.Destroy()
 }
 
